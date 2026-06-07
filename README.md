@@ -6,7 +6,7 @@
 
 ## Setup Instructions
 
-### Option: SQL Server Express (Harder, but a rewarding skill to learn)
+### Option: SQL Server Express
 
 It may be best to document the process as you go.
 
