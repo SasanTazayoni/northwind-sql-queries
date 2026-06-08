@@ -1,5 +1,7 @@
 # Northwind SQL Queries
 
+![MySQL](./tech/mysql.png) ![VSCode](./tech/vscode.png)
+
 > All queries in this project are written against the **Northwind** database. The SQL to set it up can be found here: [instnwnd.sql](https://github.com/microsoft/sql-server-samples/blob/master/samples/databases/northwind-pubs/instnwnd.sql)
 
 ---
