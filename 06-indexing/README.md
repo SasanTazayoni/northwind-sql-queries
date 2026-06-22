@@ -222,3 +222,104 @@ SET STATISTICS IO OFF;
 | Unique            | No             | Many        | Enforcing uniqueness              |
 | Composite         | No             | Many        | Multi-column filters/joins        |
 | Covering (INCLUDE)| No             | Many        | Eliminating key lookups           |
+
+---
+
+## Practical Exercises
+
+### The Problem Query
+
+Start with this query as the baseline:
+
+```sql
+SELECT *
+FROM Orders
+WHERE CustomerID = 'ALFKI';
+```
+
+Without an index on `CustomerID`, SQL Server performs a **full table scan** — it reads every row in the Orders table to find matches. On a small dataset like Northwind this is barely noticeable, but on a table with millions of rows it becomes a serious bottleneck.
+
+---
+
+### Task 1 — Create your first index
+
+Create a nonclustered index on `Orders.CustomerID`:
+
+```sql
+CREATE NONCLUSTERED INDEX IX_Orders_CustomerID
+ON Orders (CustomerID);
+```
+
+Run the original query again. In SSMS, enable the actual execution plan (`Ctrl+M`) before running — you should now see an **Index Seek** instead of a **Table Scan**.
+
+---
+
+### Task 2 — Create a composite index
+
+Create a second index covering both `CustomerID` and `OrderDate`:
+
+```sql
+CREATE NONCLUSTERED INDEX IX_Orders_CustomerID_OrderDate
+ON Orders (CustomerID, OrderDate);
+```
+
+This is useful for queries that both filter on `CustomerID` and sort or filter on `OrderDate`. The leading column (`CustomerID`) must appear in the `WHERE` clause for the index to be used — see the pitfalls section above.
+
+---
+
+### Task 3 — Wipe the cache
+
+SQL Server caches data pages in memory. To get an accurate measure of query performance without cached results, run this before your query (requires sysadmin permissions):
+
+```sql
+DBCC DROPCLEANBUFFERS;  -- clears the data cache
+DBCC FREEPROCCACHE;     -- clears the execution plan cache
+```
+
+Only use this in a development environment — never run it against a production server.
+
+---
+
+### Task 4 — Test the composite index
+
+Run this query with the actual execution plan enabled:
+
+```sql
+SELECT *
+FROM Orders
+WHERE CustomerID = 'ALFKI'
+ORDER BY OrderDate;
+```
+
+With `IX_Orders_CustomerID_OrderDate` in place, SQL Server can seek directly to the matching `CustomerID` rows and read them in `OrderDate` order from the index — no separate sort step needed.
+
+---
+
+### Task 5 — Table Scan vs Index Seek
+
+| Operator    | What it does                                              | Cost       |
+|-------------|-----------------------------------------------------------|------------|
+| Table Scan  | Reads every row in the table                              | High       |
+| Index Seek  | Jumps directly to matching rows via the index B-Tree      | Low        |
+| Index Scan  | Reads the entire index (better than a table scan but not a seek) | Medium |
+
+A **Table Scan** appears when no suitable index exists or when the engine decides the index won't help (e.g. very small table, or low-selectivity column). An **Index Seek** is what you are aiming for.
+
+---
+
+### Task 6 — Why column order matters
+
+Given the composite index `IX_Orders_CustomerID_OrderDate` on `(CustomerID, OrderDate)`:
+
+```sql
+-- Uses the index — CustomerID is the leading column
+SELECT * FROM Orders WHERE CustomerID = 'ALFKI';
+
+-- Uses the index — both columns present
+SELECT * FROM Orders WHERE CustomerID = 'ALFKI' AND OrderDate > '1997-01-01';
+
+-- Cannot use the index efficiently — leading column is skipped
+SELECT * FROM Orders WHERE OrderDate > '1997-01-01';
+```
+
+The engine can only use an index starting from the leftmost column. If you skip the leading column, it falls back to a scan. This is why you should put your most selective filter column first when creating a composite index.
