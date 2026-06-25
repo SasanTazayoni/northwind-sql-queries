@@ -77,3 +77,29 @@ The process is very similar to SSMS. You will need to install the **SQL Server E
    ```
 
 If the query runs successfully, you're good to go!
+
+---
+
+## How to Approach Writing a Query
+
+Think about the data first, columns last. Work through this order mentally before writing anything:
+
+1. **FROM** — which table are you starting from?
+2. **JOINs** — what other tables do you need and how do they connect?
+3. **WHERE** — what rows do you want to filter out?
+4. **GROUP BY** — if aggregating, what are you grouping by?
+5. **HAVING** — filter after aggregation (like `WHERE` but for aggregated results)
+6. **SELECT** — now pick the columns you actually want to return
+7. **ORDER BY** — sort the final result
+
+Most people write `SELECT` first because it's the syntax, but mentally you should be thinking about tables, joins, and filters before deciding which columns to show.
+
+For more detail on each topic see the topic folders:
+
+- [01-data-modelling](./01-data-modelling/)
+- [02-basic-queries](./02-basic-queries/)
+- [03-joins](./03-joins/)
+- [04-aggregation-and-subqueries](./04-aggregation-and-subqueries/)
+- [05-case-statements-and-stored-procedures](./05-case-statements-and-stored-procedures/)
+- [06-indexing](./06-indexing/)
+- [07-query-optimisation](./07-query-optimisation/)
