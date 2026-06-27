@@ -15,6 +15,17 @@ A `CASE` statement is SQL's version of an if/else. It evaluates conditions row b
 - Pivot or reshape results
 - Control sort order dynamically
 
+### How to Approach Writing a CASE Statement
+
+1. **Identify the column** you are evaluating
+2. **Define the boundaries** for each bucket — what values map to what label
+3. **Write the CASE** expression
+4. **Add aggregation** if needed (`COUNT`, `SUM` etc.) around or alongside the `CASE`
+
+`CASE` is just an expression — it can go anywhere a column can: `SELECT`, `GROUP BY`, `HAVING`, `ORDER BY`.
+
+---
+
 ### Syntax
 
 There are two forms:
@@ -92,6 +103,16 @@ GROUP BY c.CategoryName;
 ---
 
 ## Stored Procedures
+
+### How to Approach Writing a Stored Procedure
+
+1. **Define the purpose** — what should it do and what parameters does it need?
+2. **Write the query first** — get it working as a plain query before wrapping it in a procedure
+3. **Wrap it** in `CREATE PROCEDURE` with `@parameters`
+4. **Test with `EXEC`**
+5. **Use `ALTER`** to modify if needed
+
+---
 
 ### What are they?
 
