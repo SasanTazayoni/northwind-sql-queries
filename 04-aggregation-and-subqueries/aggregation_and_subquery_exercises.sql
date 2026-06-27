@@ -63,28 +63,88 @@ ORDER BY OrderValue DESC;
 -- ============================================================
 
 -- 1. Products above avg price
+SELECT ProductID, ProductName, UnitPrice
+FROM Products
+WHERE UnitPrice > (SELECT AVG(UnitPrice) FROM Products);
 
 -- 2. Orders above avg order value
+SELECT
+  OrderID,
+  ROUND(SUM(Quantity * UnitPrice * (1 - Discount)), 2) AS OrderValue
+FROM [Order Details]
+GROUP BY OrderID
+HAVING ROUND(SUM(Quantity * UnitPrice * (1 - Discount)), 2) > (
+  SELECT AVG(OrderValue)
+  FROM (
+    SELECT SUM(Quantity * UnitPrice * (1 - Discount)) AS OrderValue
+    FROM [Order Details]
+    GROUP BY OrderID
+  ) AS OrderTotals
+);
 
 -- 3. Customers with more than 5 orders (can be done with or without a subquery)
+SELECT CustomerID, COUNT(OrderID) AS TotalOrders
+FROM Orders
+GROUP BY CustomerID
+HAVING COUNT(OrderID) > 5;
 
 -- 4. Products that have been ordered at least once
+SELECT ProductID, ProductName
+FROM Products
+WHERE ProductID IN (SELECT ProductID FROM [Order Details]);
 
 -- 5. Customers that spent above avg per order
+SELECT
+   o.CustomerID,
+  ROUND(SUM(od.Quantity * od.UnitPrice * (1 - od.Discount)), 2) AS TotalSpend
+FROM Orders o
+JOIN [Order Details] od ON od.OrderID = o.OrderID
+GROUP BY o.CustomerID
+HAVING ROUND(SUM(od.Quantity * od.UnitPrice * (1 - od.Discount)), 2) > (
+  SELECT AVG(OrderValue)
+  FROM (
+    SELECT SUM(Quantity * UnitPrice * (1 - Discount)) AS OrderValue
+    FROM [Order Details]
+    GROUP BY OrderID
+  ) AS OrderTotals
+);
+
 
 -- 6. Products above the avg price for their category
-
+SELECT ProductID, ProductName, UnitPrice
+FROM Products p
+WHERE UnitPrice > (
+	SELECT AVG(UnitPrice) AS AveragePrice
+	FROM Products p2
+	WHERE p2.CategoryID = p.CategoryID
+);
 
 -- ============================================================
 -- Bonus
 -- ============================================================
 
 -- 7. Find products cheaper than the average price
+SELECT ProductID, ProductName, UnitPrice
+FROM Products
+WHERE UnitPrice < (SELECT AVG(UnitPrice) FROM Products);
 
 -- 8. Find customers who have placed at least one order
+SELECT CustomerID
+FROM Customers
+WHERE CustomerID IN (
+	SELECT CustomerID FROM Orders
+)
 
--- 9. Find orders with total value greater than average
+-- 9. Find products never ordered (use subquery, not JOIN)
+SELECT *
+FROM Products
+WHERE ProductID NOT IN (
+    SELECT ProductID
+    FROM [Order Details]
+);
 
--- 10. Find products never ordered (use subquery, not JOIN)
-
--- 11. Find employees who handled more than 10 orders
+-- 10. Find employees who handled more than 10 orders
+SELECT EmployeeID, COUNT(OrderID) TotalOrders
+FROM Orders
+GROUP BY EmployeeID
+HAVING COUNT(OrderID) > 10;
