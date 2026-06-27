@@ -96,6 +96,18 @@ HAVING COUNT(ProductID) > 5;    -- then filter groups
 
 ---
 
+## How to Approach Writing a Subquery
+
+Work **inside out** — solve the innermost query first, then build outward:
+
+1. **Innermost subquery** — write and run it on its own to verify it returns what you expect
+2. **Middle layer** — wrap it and test again (e.g. take an average of the inner result)
+3. **Outer query** — add the final filter or selection using the subquery result
+
+If the subquery should return a single value (for use in `WHERE` or `HAVING`), make sure it actually does before plugging it in.
+
+---
+
 ## Subqueries
 
 A subquery is a query nested inside another query. It is always wrapped in parentheses.
