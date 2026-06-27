@@ -38,10 +38,14 @@ FROM Products
 ORDER BY UnitPrice DESC;
 
 -- 7. Total quantity sold per product
-SELECT ProductID, SUM(Quantity) AS TotalNumberOfSales
-FROM [Order Details]
-GROUP BY ProductID
+SELECT
+    p.ProductName,
+    SUM(od.Quantity) AS TotalNumberOfSales
+FROM Products p
+JOIN [Order Details] od ON od.ProductID = p.ProductID
+GROUP BY p.ProductName
 ORDER BY TotalNumberOfSales DESC;
+
 
 -- 8. Customers who made more than 5 orders
 SELECT CustomerID, COUNT(OrderID) AS OrdersPerCustomer
@@ -83,7 +87,7 @@ HAVING ROUND(SUM(Quantity * UnitPrice * (1 - Discount)), 2) > (
 );
 
 -- 3. Customers with more than 5 orders (can be done with or without a subquery)
-SELECT CustomerID, COUNT(OrderID) AS TotalOrders
+SELECT CustomerID, CompanyName, COUNT(OrderID) AS TotalOrders
 FROM Orders
 GROUP BY CustomerID
 HAVING COUNT(OrderID) > 5;
@@ -129,7 +133,7 @@ FROM Products
 WHERE UnitPrice < (SELECT AVG(UnitPrice) FROM Products);
 
 -- 8. Find customers who have placed at least one order
-SELECT CustomerID
+SELECT CustomerID, CompanyName
 FROM Customers
 WHERE CustomerID IN (
 	SELECT CustomerID FROM Orders
@@ -144,7 +148,7 @@ WHERE ProductID NOT IN (
 );
 
 -- 10. Find employees who handled more than 10 orders
-SELECT EmployeeID, COUNT(OrderID) TotalOrders
+SELECT EmployeeID, FirstName, LastName, COUNT(OrderID) TotalOrders
 FROM Orders
 GROUP BY EmployeeID
 HAVING COUNT(OrderID) > 10;
